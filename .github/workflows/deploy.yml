@@ -24,6 +24,8 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bun run build
+        env:
+          NEXT_BASE_PATH: /xiangqi-lab
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
@@ -32,7 +34,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
+      name: Production
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
