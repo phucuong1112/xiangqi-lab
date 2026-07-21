@@ -5,6 +5,18 @@ export function exportToText(history: HistoryEntry[]): string {
   return history.map((entry, index) => `${index + 1}. ${entry.notation}`).join("\n");
 }
 
+/** Triggers a browser download of the kỳ phổ as a UTF-8 .txt file. Client-only (uses Blob/URL/DOM APIs). */
+export function downloadKyPhoText(history: HistoryEntry[], filename = "kyphoso.txt"): void {
+  const text = exportToText(history);
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export interface ImportResult {
   boardState: BoardState;
   history: HistoryEntry[];

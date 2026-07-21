@@ -4,12 +4,17 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useGameStore } from "@/lib/xiangqi/game-store";
-import { exportToText, importFromText } from "@/lib/xiangqi/kyphoso";
+import { downloadKyPhoText, importFromText } from "@/lib/xiangqi/kyphoso";
 
 /** A plain-text kỳ phổ is at most a few hundred lines; this is a generous cap. */
 const MAX_UPLOAD_BYTES = 300 * 1024;
 
-export function KyPhoSoPanel() {
+interface KyPhoSoPanelProps {
+  /** Called after a paste or file-upload import successfully loads a game. */
+  onImportSuccess?: () => void;
+}
+
+export function KyPhoSoPanel({ onImportSuccess }: KyPhoSoPanelProps) {
   const history = useGameStore((s) => s.history);
   const loadGame = useGameStore((s) => s.loadGame);
   const [pasteText, setPasteText] = useState("");
@@ -17,14 +22,7 @@ export function KyPhoSoPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleExport() {
-    const text = exportToText(history);
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "kyphoso.txt";
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadKyPhoText(history);
   }
 
   function applyImport(text: string) {
@@ -34,7 +32,9 @@ export function KyPhoSoPanel() {
       return;
     }
     setError(null);
+    setPasteText("");
     loadGame(result);
+    onImportSuccess?.();
   }
 
   function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
